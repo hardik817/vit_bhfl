@@ -49,7 +49,7 @@ const testCases = [
 function runTest(testCase, port = 3000) {
     return new Promise((resolve, reject) => {
         const postData = JSON.stringify(testCase.data);
-        
+
         const options = {
             hostname: 'localhost',
             port: port,
@@ -60,31 +60,30 @@ function runTest(testCase, port = 3000) {
                 'Content-Length': Buffer.byteLength(postData)
             }
         };
-        
+
         const req = http.request(options, (res) => {
             let data = '';
-            
+
             res.on('data', (chunk) => {
                 data += chunk;
             });
-            
+
             res.on('end', () => {
                 try {
                     const response = JSON.parse(data);
                     console.log(`\n📝 Test: ${testCase.name}`);
                     console.log('Request:', JSON.stringify(testCase.data, null, 2));
                     console.log('Response:', JSON.stringify(response, null, 2));
-                    
+
                     // Validate response
                     let passed = true;
                     const errors = [];
-                    
-                    // Check required fields
+
                     if (!response.is_success) {
                         errors.push('is_success should be true');
                         passed = false;
                     }
-                    
+
                     // Check arrays
                     ['odd_numbers', 'even_numbers', 'alphabets', 'special_characters'].forEach(field => {
                         if (JSON.stringify(response[field]) !== JSON.stringify(testCase.expected[field])) {
@@ -92,20 +91,26 @@ function runTest(testCase, port = 3000) {
                             passed = false;
                         }
                     });
-                    
+
                     // Check sum
                     if (response.sum !== testCase.expected.sum) {
                         errors.push(`sum mismatch. Expected: ${testCase.expected.sum}, Got: ${response.sum}`);
                         passed = false;
                     }
-                    
+
+                    // Check concat_string
+                    if (response.concat_string !== testCase.expected.concat_string) {
+                        errors.push(`concat_string mismatch. Expected: ${testCase.expected.concat_string}, Got: ${response.concat_string}`);
+                        passed = false;
+                    }
+
                     if (passed) {
                         console.log('✅ Test PASSED');
                     } else {
                         console.log('❌ Test FAILED');
                         errors.forEach(error => console.log(`   - ${error}`));
                     }
-                    
+
                     resolve(passed);
                 } catch (e) {
                     console.error('Failed to parse response:', e);
@@ -113,23 +118,23 @@ function runTest(testCase, port = 3000) {
                 }
             });
         });
-        
+
         req.on('error', (e) => {
             console.error(`Problem with request: ${e.message}`);
             reject(e);
         });
-        
+
         req.write(postData);
         req.end();
     });
 }
 
 async function runAllTests() {
-    console.log('🚀 Starting API Tests...');
-    console.log('Make sure your server is running on port 3000\n');
-    
+    console.log('🚀 Starting API Tests (LOCAL)...');
+    console.log('Make sure your server is running on http://localhost:3000\n');
+
     let allPassed = true;
-    
+
     for (const testCase of testCases) {
         try {
             const passed = await runTest(testCase);
@@ -139,12 +144,12 @@ async function runAllTests() {
             allPassed = false;
         }
     }
-    
+
     console.log('\n' + '='.repeat(50));
     if (allPassed) {
-        console.log('✅ All tests PASSED!');
+        console.log('✅ All tests PASSED locally!');
     } else {
-        console.log('❌ Some tests FAILED. Please check the implementation.');
+        console.log('❌ Some tests FAILED locally.');
     }
 }
 
