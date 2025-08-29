@@ -1,7 +1,7 @@
 const https = require('https');
 
 // CHANGE THIS TO YOUR VERCEL URL (without https://)
-const VERCEL_URL = 'vit-bhfl-p9at-git-main-hardik-sachdevas-projects.vercel.app';
+const VERCEL_URL = 'vit-bhfl.vercel.app';
 
 // Tests
 const tst = [
