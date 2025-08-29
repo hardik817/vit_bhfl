@@ -1,0 +1,19 @@
+{
+    "version": 2,
+    "functions": {
+        "api/bfhl.js": {
+            "runtime": "nodejs20.x",
+            "memory": 128
+        }
+    },
+    "routes": [
+        {
+            "src": "^/bfhl$",
+            "dest": "/api/bfhl.js",
+            "methods": [
+                "POST",
+                "OPTIONS"
+            ]
+        }
+    ]
+}
