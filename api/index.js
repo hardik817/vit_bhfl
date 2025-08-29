@@ -8,10 +8,10 @@ app.use(express.json());
 
 // usr
 const USR = {
-    full_name: "kaustubh", 
-    dob: "17091999", 
-    email: "kaustubh@xyz.com", 
-    roll_number: "ABCD123" 
+    full_name: "HardikSachdeva",
+    dob: "22022005",
+    email: "hardik.sachdeva2022@vitstudent.ac.in",
+    roll_number: "22BCE2850"
 };
 
 // num
@@ -46,7 +46,7 @@ const altCap = (s) => {
 app.post('/bfhl', (req, res) => {
     try {
         const { data } = req.body;
-        
+
         // val
         if (!data || !Array.isArray(data)) {
             return res.status(400).json({
@@ -66,18 +66,18 @@ app.post('/bfhl', (req, res) => {
         // proc
         data.forEach(itm => {
             const s = String(itm);
-            
+
             // chk
             if (isNum(s)) {
                 const n = parseInt(s);
                 sum += n;
-                
+
                 if (n % 2 === 0) {
                     evn.push(s);
                 } else {
                     odd.push(s);
                 }
-            } 
+            }
             // alph
             else if (isAlp(s)) {
                 alp.push(s.toUpperCase());
@@ -91,14 +91,14 @@ app.post('/bfhl', (req, res) => {
             else {
                 let hasA = false;
                 let extA = '';
-                
+
                 for (let c of s) {
                     if (isAlp(c)) {
                         hasA = true;
                         extA += c;
                     }
                 }
-                
+
                 if (hasA) {
                     alp.push(s.toUpperCase());
                     allA += extA;
@@ -125,7 +125,7 @@ app.post('/bfhl', (req, res) => {
         };
 
         res.status(200).json(rsp);
-        
+
     } catch (err) {
         console.error('Error:', err);
         res.status(500).json({

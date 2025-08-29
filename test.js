@@ -1,6 +1,6 @@
 const https = require('https');
 
-const VERCEL_URL = 'bjf-two.vercel.app'; // Replace with your actual Vercel URL
+const VERCEL_URL = 'vit-bhfl.vercel.app'; // Replace with your actual Vercel URL
 
 // Tests
 const tst = [
@@ -51,7 +51,7 @@ const tst = [
 function run(tc) {
     return new Promise((res, rej) => {
         const pd = JSON.stringify(tc.data);
-        
+
         const opt = {
             hostname: VERCEL_URL,
             port: 443,
@@ -62,31 +62,31 @@ function run(tc) {
                 'Content-Length': Buffer.byteLength(pd)
             }
         };
-        
+
         const req = https.request(opt, (r) => {
             let d = '';
-            
+
             r.on('data', (ch) => {
                 d += ch;
             });
-            
+
             r.on('end', () => {
                 try {
                     const rsp = JSON.parse(d);
                     console.log(`\nTest: ${tc.name}`);
                     console.log('Request:', JSON.stringify(tc.data, null, 2));
                     console.log('Response:', JSON.stringify(rsp, null, 2));
-                    
+
                     // Val
                     let ok = true;
                     const err = [];
-                    
+
                     // Chk
                     if (!rsp.is_success) {
                         err.push('is_success should be true');
                         ok = false;
                     }
-                    
+
                     // Arrays
                     ['odd_numbers', 'even_numbers', 'alphabets', 'special_characters'].forEach(f => {
                         if (JSON.stringify(rsp[f]) !== JSON.stringify(tc.exp[f])) {
@@ -94,20 +94,20 @@ function run(tc) {
                             ok = false;
                         }
                     });
-                    
+
                     // Sum
                     if (rsp.sum !== tc.exp.sum) {
                         err.push(`sum mismatch. Expected: ${tc.exp.sum}, Got: ${rsp.sum}`);
                         ok = false;
                     }
-                    
+
                     if (ok) {
                         console.log('Test PASSED');
                     } else {
                         console.log('Test FAILED');
                         err.forEach(e => console.log(`   - ${e}`));
                     }
-                    
+
                     res(ok);
                 } catch (e) {
                     console.error('Parse error:', e);
@@ -115,12 +115,12 @@ function run(tc) {
                 }
             });
         });
-        
+
         req.on('error', (e) => {
             console.error(`Error: ${e.message}`);
             rej(e);
         });
-        
+
         req.write(pd);
         req.end();
     });
@@ -129,9 +129,9 @@ function run(tc) {
 async function runAll() {
     console.log(`Testing Vercel API at: https://${VERCEL_URL}/bfhl`);
     console.log('Starting tests...\n');
-    
+
     let all = true;
-    
+
     for (const tc of tst) {
         try {
             const ok = await run(tc);
@@ -141,7 +141,7 @@ async function runAll() {
             all = false;
         }
     }
-    
+
     console.log('\n' + '='.repeat(50));
     if (all) {
         console.log('All tests PASSED!');
