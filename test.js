@@ -1,13 +1,15 @@
-const http = require('http');
+const https = require('https');
 
-// Test cases based on the examples
-const testCases = [
+const VERCEL_URL = 'bjf-two.vercel.app'; // Replace with your actual Vercel URL
+
+// Tests
+const tst = [
     {
         name: "Example A",
         data: {
             data: ["a", "1", "334", "4", "R", "$"]
         },
-        expected: {
+        exp: {
             odd_numbers: ["1"],
             even_numbers: ["334", "4"],
             alphabets: ["A", "R"],
@@ -21,7 +23,7 @@ const testCases = [
         data: {
             data: ["2", "a", "y", "4", "&", "-", "*", "5", "92", "b"]
         },
-        expected: {
+        exp: {
             odd_numbers: ["5"],
             even_numbers: ["2", "4", "92"],
             alphabets: ["A", "Y", "B"],
@@ -35,7 +37,7 @@ const testCases = [
         data: {
             data: ["A", "ABcD", "DOE"]
         },
-        expected: {
+        exp: {
             odd_numbers: [],
             even_numbers: [],
             alphabets: ["A", "ABCD", "DOE"],
@@ -46,112 +48,107 @@ const testCases = [
     }
 ];
 
-function runTest(testCase, port = 3000) {
-    return new Promise((resolve, reject) => {
-        const postData = JSON.stringify(testCase.data);
-
-        const options = {
-            hostname: 'localhost',
-            port: port,
+function run(tc) {
+    return new Promise((res, rej) => {
+        const pd = JSON.stringify(tc.data);
+        
+        const opt = {
+            hostname: VERCEL_URL,
+            port: 443,
             path: '/bfhl',
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Content-Length': Buffer.byteLength(postData)
+                'Content-Length': Buffer.byteLength(pd)
             }
         };
-
-        const req = http.request(options, (res) => {
-            let data = '';
-
-            res.on('data', (chunk) => {
-                data += chunk;
+        
+        const req = https.request(opt, (r) => {
+            let d = '';
+            
+            r.on('data', (ch) => {
+                d += ch;
             });
-
-            res.on('end', () => {
+            
+            r.on('end', () => {
                 try {
-                    const response = JSON.parse(data);
-                    console.log(`\n📝 Test: ${testCase.name}`);
-                    console.log('Request:', JSON.stringify(testCase.data, null, 2));
-                    console.log('Response:', JSON.stringify(response, null, 2));
-
-                    // Validate response
-                    let passed = true;
-                    const errors = [];
-
-                    if (!response.is_success) {
-                        errors.push('is_success should be true');
-                        passed = false;
+                    const rsp = JSON.parse(d);
+                    console.log(`\nTest: ${tc.name}`);
+                    console.log('Request:', JSON.stringify(tc.data, null, 2));
+                    console.log('Response:', JSON.stringify(rsp, null, 2));
+                    
+                    // Val
+                    let ok = true;
+                    const err = [];
+                    
+                    // Chk
+                    if (!rsp.is_success) {
+                        err.push('is_success should be true');
+                        ok = false;
                     }
-
-                    // Check arrays
-                    ['odd_numbers', 'even_numbers', 'alphabets', 'special_characters'].forEach(field => {
-                        if (JSON.stringify(response[field]) !== JSON.stringify(testCase.expected[field])) {
-                            errors.push(`${field} mismatch. Expected: ${JSON.stringify(testCase.expected[field])}, Got: ${JSON.stringify(response[field])}`);
-                            passed = false;
+                    
+                    // Arrays
+                    ['odd_numbers', 'even_numbers', 'alphabets', 'special_characters'].forEach(f => {
+                        if (JSON.stringify(rsp[f]) !== JSON.stringify(tc.exp[f])) {
+                            err.push(`${f} mismatch. Expected: ${JSON.stringify(tc.exp[f])}, Got: ${JSON.stringify(rsp[f])}`);
+                            ok = false;
                         }
                     });
-
-                    // Check sum
-                    if (response.sum !== testCase.expected.sum) {
-                        errors.push(`sum mismatch. Expected: ${testCase.expected.sum}, Got: ${response.sum}`);
-                        passed = false;
+                    
+                    // Sum
+                    if (rsp.sum !== tc.exp.sum) {
+                        err.push(`sum mismatch. Expected: ${tc.exp.sum}, Got: ${rsp.sum}`);
+                        ok = false;
                     }
-
-                    // Check concat_string
-                    if (response.concat_string !== testCase.expected.concat_string) {
-                        errors.push(`concat_string mismatch. Expected: ${testCase.expected.concat_string}, Got: ${response.concat_string}`);
-                        passed = false;
-                    }
-
-                    if (passed) {
-                        console.log('✅ Test PASSED');
+                    
+                    if (ok) {
+                        console.log('Test PASSED');
                     } else {
-                        console.log('❌ Test FAILED');
-                        errors.forEach(error => console.log(`   - ${error}`));
+                        console.log('Test FAILED');
+                        err.forEach(e => console.log(`   - ${e}`));
                     }
-
-                    resolve(passed);
+                    
+                    res(ok);
                 } catch (e) {
-                    console.error('Failed to parse response:', e);
-                    reject(e);
+                    console.error('Parse error:', e);
+                    rej(e);
                 }
             });
         });
-
+        
         req.on('error', (e) => {
-            console.error(`Problem with request: ${e.message}`);
-            reject(e);
+            console.error(`Error: ${e.message}`);
+            rej(e);
         });
-
-        req.write(postData);
+        
+        req.write(pd);
         req.end();
     });
 }
 
-async function runAllTests() {
-    console.log('🚀 Starting API Tests (LOCAL)...');
-    console.log('Make sure your server is running on http://localhost:3000\n');
-
-    let allPassed = true;
-
-    for (const testCase of testCases) {
+async function runAll() {
+    console.log(`Testing Vercel API at: https://${VERCEL_URL}/bfhl`);
+    console.log('Starting tests...\n');
+    
+    let all = true;
+    
+    for (const tc of tst) {
         try {
-            const passed = await runTest(testCase);
-            if (!passed) allPassed = false;
-        } catch (error) {
-            console.error(`Test ${testCase.name} failed with error:`, error);
-            allPassed = false;
+            const ok = await run(tc);
+            if (!ok) all = false;
+        } catch (e) {
+            console.error(`Test ${tc.name} error:`, e);
+            all = false;
         }
     }
-
+    
     console.log('\n' + '='.repeat(50));
-    if (allPassed) {
-        console.log('✅ All tests PASSED locally!');
+    if (all) {
+        console.log('All tests PASSED!');
     } else {
-        console.log('❌ Some tests FAILED locally.');
+        console.log('Some tests FAILED.');
     }
 }
 
-// Run tests
-runAllTests().catch(console.error);
+// Run
+runAll().catch(console.error);

@@ -2,44 +2,52 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 
+// Mid
 app.use(cors());
 app.use(express.json());
 
-const USER_DETAILS = {
-    full_name: "Hardik Sachdeva",
-    dob: "22022005",
-    email: "hardik.sachdeva2022@vitstudent.ac.in",
-    roll_number: "22BCE2850"
+// usr
+const USR = {
+    full_name: "kaustubh", 
+    dob: "17091999", 
+    email: "kaustubh@xyz.com", 
+    roll_number: "ABCD123" 
 };
 
-const isNumber = (str) => {
-    return !isNaN(str) && !isNaN(parseFloat(str));
+// num
+const isNum = (s) => {
+    return !isNaN(s) && !isNaN(parseFloat(s));
 };
 
-const isAlphabet = (str) => {
-    return /^[a-zA-Z]+$/.test(str);
+// alp
+const isAlp = (s) => {
+    return /^[a-zA-Z]+$/.test(s);
 };
 
-const isSpecialChar = (str) => {
-    return !isNumber(str) && !isAlphabet(str);
+// spc
+const isSpc = (s) => {
+    return !isNum(s) && !isAlp(s);
 };
 
-const alternatingCaps = (str) => {
-    let result = '';
-    for (let i = 0; i < str.length; i++) {
+// alt
+const altCap = (s) => {
+    let r = '';
+    for (let i = 0; i < s.length; i++) {
         if (i % 2 === 0) {
-            result += str[i].toLowerCase();
+            r += s[i].toLowerCase();
         } else {
-            result += str[i].toUpperCase();
+            r += s[i].toUpperCase();
         }
     }
-    return result;
+    return r;
 };
 
+// post
 app.post('/bfhl', (req, res) => {
     try {
         const { data } = req.body;
-
+        
+        // val
         if (!data || !Array.isArray(data)) {
             return res.status(400).json({
                 is_success: false,
@@ -47,78 +55,79 @@ app.post('/bfhl', (req, res) => {
             });
         }
 
-        const oddNumbers = [];
-        const evenNumbers = [];
-        const alphabets = [];
-        const specialCharacters = [];
+        // init
+        const odd = [];
+        const evn = [];
+        const alp = [];
+        const spc = [];
         let sum = 0;
-        let allAlphabets = '';
+        let allA = '';
 
-        data.forEach(item => {
-            const itemStr = String(item);
-
-            if (isNumber(itemStr)) {
-                const num = parseInt(itemStr);
-                sum += num;
-
-                if (num % 2 === 0) {
-                    evenNumbers.push(itemStr);
+        // proc
+        data.forEach(itm => {
+            const s = String(itm);
+            
+            // chk
+            if (isNum(s)) {
+                const n = parseInt(s);
+                sum += n;
+                
+                if (n % 2 === 0) {
+                    evn.push(s);
                 } else {
-                    oddNumbers.push(itemStr);
+                    odd.push(s);
                 }
+            } 
+            // alph
+            else if (isAlp(s)) {
+                alp.push(s.toUpperCase());
+                allA += s;
             }
-            else if (isAlphabet(itemStr)) {
-                alphabets.push(itemStr.toUpperCase());
-                allAlphabets += itemStr;
+            // spec
+            else if (isSpc(s)) {
+                spc.push(s);
             }
-            else if (isSpecialChar(itemStr)) {
-                specialCharacters.push(itemStr);
-            }
-
+            // mix
             else {
-
-                let hasAlphabets = false;
-                let extractedAlphabets = '';
-
-                for (let char of itemStr) {
-                    if (isAlphabet(char)) {
-                        hasAlphabets = true;
-                        extractedAlphabets += char;
+                let hasA = false;
+                let extA = '';
+                
+                for (let c of s) {
+                    if (isAlp(c)) {
+                        hasA = true;
+                        extA += c;
                     }
                 }
-
-                if (hasAlphabets) {
-                    alphabets.push(itemStr.toUpperCase());
-                    allAlphabets += extractedAlphabets;
+                
+                if (hasA) {
+                    alp.push(s.toUpperCase());
+                    allA += extA;
                 }
             }
         });
 
+        // rev
+        const rev = allA.split('').reverse().join('');
+        const con = altCap(rev);
 
-        const reversedAlphabets = allAlphabets.split('').reverse().join('');
-        const concatString = alternatingCaps(reversedAlphabets);
-
-
-        // Note: The problem statement requires full_name in lowercase for the user_id.
-        const userId = `${USER_DETAILS.full_name.toLowerCase().replace(/ /g, "_")}_${USER_DETAILS.dob}`;
-
-        const response = {
+        // resp
+        const rsp = {
             is_success: true,
-            user_id: userId,
-            email: USER_DETAILS.email,
-            roll_number: USER_DETAILS.roll_number,
-            odd_numbers: oddNumbers,
-            even_numbers: evenNumbers,
-            alphabets: alphabets,
-            special_characters: specialCharacters,
+            user_id: `${USR.full_name}_${USR.dob}`,
+            email: USR.email,
+            roll_number: USR.roll_number,
+            odd_numbers: odd,
+            even_numbers: evn,
+            alphabets: alp,
+            special_characters: spc,
             sum: String(sum),
-            concat_string: concatString
+            concat_string: con
         };
 
-        res.status(200).json(response);
-
-    } catch (error) {
-        console.error('Error processing request:', error);
+        res.status(200).json(rsp);
+        
+    } catch (err) {
+        console.error('Error:', err);
         res.status(500).json({
             is_success: false,
             error: "Internal server error"
@@ -126,12 +135,14 @@ app.post('/bfhl', (req, res) => {
     }
 });
 
+// get
 app.get('/bfhl', (req, res) => {
     res.status(200).json({
         operation_code: 1
     });
 });
 
+// root
 app.get('/', (req, res) => {
     res.json({
         message: "BFHL API is running",
@@ -142,6 +153,7 @@ app.get('/', (req, res) => {
     });
 });
 
+// err
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({
@@ -150,11 +162,5 @@ app.use((err, req, res, next) => {
     });
 });
 
-// REMOVED THE app.listen() BLOCK
-// const PORT = process.env.PORT || 3000;
-// app.listen(PORT, () => {
-//     console.log(`Server is running on port ${PORT}`);
-// });
-
-// ADD THIS LINE TO EXPORT THE APP FOR VERCEL
+// exp
 module.exports = app;
