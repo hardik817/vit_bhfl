@@ -2,10 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 
-
 app.use(cors());
 app.use(express.json());
-
 
 const USER_DETAILS = {
     full_name: "Hardik Sachdeva",
@@ -101,9 +99,12 @@ app.post('/bfhl', (req, res) => {
         const concatString = alternatingCaps(reversedAlphabets);
 
 
+        // Note: The problem statement requires full_name in lowercase for the user_id.
+        const userId = `${USER_DETAILS.full_name.toLowerCase().replace(/ /g, "_")}_${USER_DETAILS.dob}`;
+
         const response = {
             is_success: true,
-            user_id: `${USER_DETAILS.full_name}_${USER_DETAILS.dob}`,
+            user_id: userId,
             email: USER_DETAILS.email,
             roll_number: USER_DETAILS.roll_number,
             odd_numbers: oddNumbers,
@@ -149,9 +150,11 @@ app.use((err, req, res, next) => {
     });
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
+// REMOVED THE app.listen() BLOCK
+// const PORT = process.env.PORT || 3000;
+// app.listen(PORT, () => {
+//     console.log(`Server is running on port ${PORT}`);
+// });
 
+// ADD THIS LINE TO EXPORT THE APP FOR VERCEL
 module.exports = app;
